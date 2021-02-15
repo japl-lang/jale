@@ -11,7 +11,7 @@ import renderer
 
 type 
   JaleEvent* = enum
-    jeKeypress, jeQuit
+    jeKeypress, jeQuit, jeFinish
 
   LineEditor* = ref object
     content*: Multiline
@@ -21,8 +21,20 @@ type
     events*: Event[JaleEvent]
     prompt*: string
     lastKeystroke*: int
-    finished*: bool
+    finished: bool
     rendered: int # how many lines were printed last full refresh
+
+# getter/setter sorts
+
+proc unfinish*(le: LineEditor) =
+  le.finished = false
+
+proc finish*(le: LineEditor) =
+  le.finished = true
+  # can be overwritten to false, inside the event
+  le.events.call(jeFinish)
+
+# constructor
 
 proc newLineEditor*: LineEditor =
   new(result)
@@ -35,6 +47,12 @@ proc newLineEditor*: LineEditor =
   result.prompt = ""
   result.rendered = 0
   
+# priv/pub methods
+
+proc reset(editor: LineEditor) =
+  editor.unfinish()
+  editor.rendered = 0
+
 proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
   var y = line
   if y == -1:
@@ -53,63 +71,50 @@ proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
 
 
 proc fullRender(editor: LineEditor) =
-  # from the current (proper) cursor pos, it draws the entire multiline prompt, then
-  # moves cursor to current x,y
+  # from the top cursor pos, it draws the entire multiline prompt, then
+  # moves cursor to current y
   for i in countup(0, editor.content.high()):
     editor.render(i, false)
-#    if i <= editor.rendered:
-    cursorDown(1)
-#    else:
-#      write stdout, "\n"
-#      inc editor.rendered
-
-proc restore(editor: LineEditor) =
-  # from the line that's represented as y=0 it moves the cursor to editor.y
-  # if it's at the bottom, it also scrolls enough
-  # it's achieved by the right number of newlines
-  # does not restore editor.x
-
-  write stdout, "\n".repeat(editor.content.len())
-  cursorUp(editor.content.len())
-  editor.rendered = editor.content.len()
-
-  if editor.content.Y == 0:
-    return
-  cursorDown(editor.content.Y)
+    if i < editor.rendered:
+      cursorDown(1)
+    else:
+      write stdout, "\n"
+      inc editor.rendered
+  cursorUp(editor.content.len() - editor.content.Y)
 
 proc moveCursorToEnd(editor: LineEditor) =
   # only called when read finished
-  cursorDown(editor.content.high() - editor.content.Y)
+  if editor.content.high() > editor.content.Y:
+    cursorDown(editor.content.high() - editor.content.Y)
   write stdout, "\n"
 
-proc moveCursorToStart(editor: LineEditor, delta: int = 0) =
-  if delta > 0:
-    cursorUp(delta)
-
-proc restoreCursor(editor: LineEditor) =
-  if editor.content.Y > 0:
-    cursorDown(editor.content.Y)
-
 proc read*(editor: LineEditor): string =
-#  write stdout, "\n"
-  editor.restore()
+  # starts at the top, full render moves it into the right y
   editor.fullRender()
-  editor.restoreCursor()
+
   while not editor.finished:
+
+    # refresh current line every time
     editor.render()
     setCursorXPos(editor.content.X + editor.prompt.len())
+    # get key (with escapes)
     let key = getKey()
+    # record y pos
     let preY = editor.content.Y
+    # call the events
     editor.lastKeystroke = key
     editor.keystrokes.call(key)
     editor.events.call(jeKeypress)
+    # redraw everything if y changed
     if preY != editor.content.Y:
-      # redraw everything because y changed
-      editor.moveCursorToStart(preY)
+      # move to the top
+      if preY > 0:
+        cursorUp(preY)
+      # move to the right y
       editor.fullRender()
-      editor.restoreCursor()
 
-  editor.finished = false
+  # move cursor to end
   editor.moveCursorToEnd()
+  editor.reset()
   
   return editor.content.getContent()

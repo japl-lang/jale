@@ -1,6 +1,7 @@
 import editor
 import event
 import keycodes
+import tables
 
 template bindKey*(editor: LineEditor, key: int, body: untyped) =
   proc action {.gensym.} =

@@ -31,15 +31,15 @@ proc defControl(editor: LineEditor) =
       editor.content.delete()
     check("enter"):
       if editor.content.Y() == editor.content.high() and editor.content.getLine(editor.content.high()) == "":
-        editor.finished = true
+        editor.finish()
       else:
         editor.content.insertline()
     check("ctrl+c"):
-      editor.finished = true
+      editor.finish()
       editor.events.call(jeQuit)
     check("ctrl+d"):
       if editor.content.getContent() == "":
-        editor.finished = true
+        editor.finish()
         editor.events.call(jeQuit)
 
 proc defLog(editor: LineEditor) =
