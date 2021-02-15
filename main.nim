@@ -15,4 +15,4 @@ e.populateDefaults()
 while keep:
   let input = e.read()
   echo "output:<" & input.replace("\n", "\\n") & ">"
-  
+
