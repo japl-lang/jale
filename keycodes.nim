@@ -7,7 +7,12 @@ import terminal
 type
   JaleKeycode* = enum
     jkStart = 255 # jale keycodes exported start one above jkStart
-    jkLeft = 256, jkRight, jkUp, jkDown, jkHome, jkEnd, jkDelete, jkBackspace,
+    jkLeft = 256, jkRight, jkUp, jkDown, 
+    jkHome, jkEnd, jkPageUp, jkPageDown,
+    jkShiftLeft, jkShiftRight, jkShiftUp, jkShiftDown,
+    jkCtrlLeft, jkCtrlRight, jkCtrlUp, jkCtrlDown,
+    jkCtrlHome, jkCtrlEnd, jkCtrlPageUp, jkCtrlPageDown,
+    jkDelete, jkBackspace,
     jkInsert, jkEnter
 
     jkFinish, # jale keycodes exported end one below jkFinish
@@ -56,20 +61,60 @@ block:
     defEscSeq(@[224, 83], jkDelete)
     # TODO: finish defining escape sequences
   else:
+    # arrow keys
     defEscSeq(@[27], jkContinue)
     defEscSeq(@[27, 91], jkContinue)
     defEscSeq(@[27, 91, 65], jkUp)
     defEscSeq(@[27, 91, 66], jkDown)
     defEscSeq(@[27, 91, 67], jkRight)
     defEscSeq(@[27, 91, 68], jkLeft)
+
+    # shift+arrow keys
+    defEscSeq(@[27, 91, 49], jkContinue)
+    defEscSeq(@[27, 91, 49, 59], jkContinue)
+    defEscSeq(@[27, 91, 49, 59, 53], jkContinue) # ctrl
+    defEscSeq(@[27, 91, 49, 59, 50], jkContinue) # shift
+
+    defEscSeq(@[27, 91, 49, 59, 50, 65], jkShiftUp)
+    defEscSeq(@[27, 91, 49, 59, 50, 66], jkShiftDown)
+    defEscSeq(@[27, 91, 49, 59, 50, 67], jkShiftRight)
+    defEscSeq(@[27, 91, 49, 59, 50, 68], jkShiftLeft)
+
+    defEscSeq(@[27, 91, 49, 59, 53, 65], jkCtrlUp) # ctrl
+    defEscSeq(@[27, 91, 49, 59, 53, 66], jkCtrlDown) # ctrl
+    defEscSeq(@[27, 91, 49, 59, 53, 67], jkCtrlRight) # ctrl
+    defEscSeq(@[27, 91, 49, 59, 53, 68], jkCtrlLeft) # ctrl
+
+    # home, end
     defEscSeq(@[27, 91, 72], jkHome)
     defEscSeq(@[27, 91, 70], jkEnd)
+
+    # ctrl+ home, end
+    defEscSeq(@[27, 91, 49, 59, 53, 72], jkCtrlHome)
+    defEscSeq(@[27, 91, 49, 59, 53, 70], jkCtrlEnd)
+
+    # fancy keys like delete, insert, pgup, pgdown
     defEscSeq(@[27, 91, 51], jkContinue)
     defEscSeq(@[27, 91, 50], jkContinue)
+    defEscSeq(@[27, 91, 54], jkContinue)
+    defEscSeq(@[27, 91, 53], jkContinue)
     defEscSeq(@[27, 91, 51, 126], jkDelete)
     defEscSeq(@[27, 91, 50, 126], jkInsert)
+    defEscSeq(@[27, 91, 53, 126], jkPageUp)
+    defEscSeq(@[27, 91, 54, 126], jkPageDown)
+
+    # ctrl + fancy keys like pgup, pgdown
+    defEscSeq(@[27, 91, 53, 59], jkContinue)
+    defEscSeq(@[27, 91, 53, 59, 53], jkContinue)
+    defEscSeq(@[27, 91, 53, 59, 53, 126], jkCtrlPageUp)
+    defEscSeq(@[27, 91, 54, 59], jkContinue)
+    defEscSeq(@[27, 91, 54, 59, 53], jkContinue)
+    defEscSeq(@[27, 91, 54, 59, 53, 126], jkCtrlPageDown)
+
+    # other keys 
     defEscSeq(@[13], jkEnter)
     defEscSeq(@[127], jkBackspace)
+    # TODO ctrl+h as backspace? test more terminals
 
 proc getKey*: int =
   var key: int = 0

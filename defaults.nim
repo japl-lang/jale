@@ -18,6 +18,14 @@ proc populateDefaults*(editor: LineEditor) =
     editor.content.up()
   editor.bindKey("down"):
     editor.content.down()
+  editor.bindKey("home"):
+    editor.content.home()
+  editor.bindKey("end"):
+    editor.content.`end`()
+  editor.bindKey("pageup"):
+    editor.content.vhome()
+  editor.bindKey("pagedown"):
+    editor.content.vend()
   editor.bindKey("backspace"):
     editor.content.backspace()
   editor.bindKey("delete"):
@@ -26,7 +34,7 @@ proc populateDefaults*(editor: LineEditor) =
     if editor.content.Y() == editor.content.high() and editor.content.getLine(editor.content.high()) == "":
       editor.finish()
     else:
-      editor.content.insertline()
+      editor.content.enter()
   editor.bindKey("ctrl+c"):
     editor.finish()
     editor.events.call(jeQuit)

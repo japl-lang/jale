@@ -6,13 +6,10 @@ type
   Line* = ref object
     content: string
 
-# getters/setters
+# getter
 
-proc content*(l: Line): string =
-  l.content
-
-proc `content=`*(l: Line, str: string) =
-  l.content = str
+proc content*(line: Line): string =
+  line.content
 
 # constructor
 
@@ -38,3 +35,17 @@ proc delete*(line: Line, start: int, finish: int) =
   if finish < line.content.high():
     result &= line.content[finish+1..line.content.high()]
   line.content = result
+
+proc range*(line: Line, start: int, finish: int): string =
+  if start > finish or start < 0 or finish > line.content.high():
+    raise newException(CatchableError, &"Invalid arguments for Line.range: start {start}, finish {finish} for line of length {line.content.len()}")
+  result = line.content[start..finish]
+
+proc len*(line: Line): int =
+  line.content.len()
+
+proc high*(line: Line): int =
+  line.content.high()
+
+proc clearLine*(line: Line) =
+  line.content = ""

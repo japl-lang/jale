@@ -69,6 +69,8 @@ proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
     0
   )
 
+proc clearLine =
+  write stdout, "\r" & " ".repeat(terminalWidth())
 
 proc fullRender(editor: LineEditor) =
   # from the top cursor pos, it draws the entire multiline prompt, then
@@ -80,7 +82,15 @@ proc fullRender(editor: LineEditor) =
     else:
       write stdout, "\n"
       inc editor.rendered
-  cursorUp(editor.content.len() - editor.content.Y)
+      
+  var extraup = 0
+  while editor.content.len() < editor.rendered:
+    clearLine()
+    cursorDown(1)
+    dec editor.rendered
+    inc extraup
+
+  cursorUp(editor.content.len() - editor.content.Y + extraup)
 
 proc moveCursorToEnd(editor: LineEditor) =
   # only called when read finished

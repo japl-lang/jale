@@ -13,6 +13,8 @@ template bindKey*(editor: LineEditor, key: char, body: untyped) =
     body
 
 template bindKey*(editor: LineEditor, key: string, body: untyped) =
+  if not keysByName.hasKey(key):
+    raise newException(Defect, "Invalid key " & key & ", it's not in the keycode table")
   editor.bindKey(keysByName[key]):
     body
 

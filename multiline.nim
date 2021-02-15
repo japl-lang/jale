@@ -27,7 +27,7 @@ proc newMultiline*: Multiline =
 # methods
 
 proc lineLen*(ml: Multiline): int =
-  ml.lines[ml.y].content.len()
+  ml.lines[ml.y].len()
 
 proc lineHigh*(ml: Multiline): int =
   ml.lineLen() - 1
@@ -37,6 +37,20 @@ proc len*(ml: Multiline): int =
 
 proc high*(ml: Multiline): int =
   ml.lines.high()
+
+# internal setter
+proc sety(ml: Multiline, target: int) =
+  ml.y = target
+  if ml.x > ml.lineLen():
+    ml.x = ml.lineLen()
+
+# warning check before calling them if y lands in illegal territory
+# these are unsafe!
+proc decy(ml: Multiline) =
+  ml.sety(ml.y-1)
+
+proc incy(ml: Multiline) =
+  ml.sety(ml.y+1)
 
 proc left*(ml: Multiline) =
   if ml.x > 0:
@@ -48,15 +62,24 @@ proc right*(ml: Multiline) =
 
 proc up*(ml: Multiline) =
   if ml.y > 0:
-    dec ml.y
-  if ml.x > ml.lineLen():
-    ml.x = ml.lineLen()
+    ml.decy
 
 proc down*(ml: Multiline) =
   if ml.y < ml.lines.high():
-    inc ml.y
-  if ml.x > ml.lineLen():
-    ml.x = ml.lineLen()
+    ml.incy
+
+proc home*(ml: Multiline) =
+  ml.x = 0
+
+proc `end`*(ml: Multiline) =
+  ml.x = ml.lineLen()
+
+proc vhome*(ml: Multiline) =
+  ml.sety(0)
+
+
+proc vend*(ml: Multiline) =
+  ml.sety(ml.high())
 
 proc insert*(ml: Multiline, str: string) =
   ml.lines[ml.y].insert(str, ml.x)
@@ -70,9 +93,16 @@ proc backspace*(ml: Multiline) =
   if ml.x > 0:
     ml.lines[ml.y].delete(ml.x - 1, ml.x - 1)
     dec ml.x
+  elif ml.x == 0 and ml.y > 0:
+    let cut = ml.lines[ml.y].content
+    ml.lines.delete(ml.y)
+    dec ml.y    
+    ml.x = ml.lineLen()
+    ml.lines[ml.y].insert(cut, ml.x)
+
 
 proc insertline*(ml: Multiline) =
-  # TODO split line support
+  # the default behaviour of command mode o
   if ml.y == ml.lines.high():
     ml.lines.add(newLine())
   else:
@@ -80,9 +110,18 @@ proc insertline*(ml: Multiline) =
   inc ml.y
   ml.x = 0
 
+proc enter*(ml: Multiline) =
+  # the default behaviour of enter in normie editors
+  if ml.x > ml.lineHigh():
+    ml.insertline() # when end of line, it's just an insertline
+  else:
+    let cut = ml.lines[ml.y].range(ml.x, ml.lineHigh())
+    ml.lines[ml.y].delete(ml.x, ml.lineHigh())
+    ml.insertline()
+    ml.lines[ml.y].insert(cut, 0)
 
 proc clearline*(ml: Multiline) =
-  ml.lines[ml.y].content = ""
+  ml.lines[ml.y].clearLine()
 
 proc removeline*(ml: Multiline) =
   ml.lines.delete(ml.y)
