@@ -14,7 +14,10 @@ those because this is a wip.
 Have nim (tested on 1.4.2, x86_64 gnu/linux) installed.
 
 ```
+git clone https://github.com/japl-lang/jale
+cd jale
 nim c main
+./main
 ```
 
 You should enter a temporary testing prompt, which you
