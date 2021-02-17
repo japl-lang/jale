@@ -42,4 +42,8 @@ proc populateDefaults*(editor: LineEditor) =
     if editor.content.getContent() == "":
       editor.finish()
       editor.events.call(jeQuit)
+  editor.bindKey("shiftup"):
+    editor.historyMove(-1)
+  editor.bindKey("shiftdown"):
+    editor.historyMove(1)
 
