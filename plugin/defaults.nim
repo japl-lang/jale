@@ -14,11 +14,11 @@ proc bindInput*(editor: LineEditor) =
 
 proc bindTerminate*(editor: LineEditor) =
   editor.bindKey("ctrl+c"):
-    editor.finish()
+    editor.quit()
 
   editor.bindKey("ctrl+d"):
     if editor.content.getContent() == "":
-      editor.finish()
+      editor.quit()
 
 
 proc populateDefaults*(editor: LineEditor, enterSubmits = true, shiftForVerticalMove = true) =

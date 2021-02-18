@@ -157,10 +157,13 @@ proc serialize*(ml: Multiline, sep: string = r"\n", replaceBS: bool = true): str
       result &= line.content & sep
   result[0..result.high() - sep.len()]
 
-proc deserialize*(str: string, sep: string = r"\n"): Multiline =
+proc deserialize*(str: string, sep: string = r"\n", replaceBS: bool = true): Multiline =
   result = newMultiline()
   for line in str.split(sep):
-    result.lines.add(newLine(line.replace(r"\\", r"\")))
+    if replaceBS:
+      result.lines.add(newLine(line.replace(r"\\", r"\")))
+    else:
+      result.lines.add(newLine(line))
 
   result.y = result.high()
   result.x = result.lineLen()

@@ -39,6 +39,10 @@ proc finish*(le: LineEditor) =
   # can be overwritten to false, inside the event
   le.events.call(jeFinish)
 
+proc quit*(le: LineEditor) =
+  le.finished = true
+  le.events.call(jeQuit)
+
 proc forceRedraw*(le: LineEditor) =
   le.forceRedraw = true
 
@@ -115,7 +119,6 @@ proc read*(editor: LineEditor): string =
   # starts at the top, full render moves it into the right y
   editor.fullRender()
 
-
   while not editor.finished:
 
     # refresh current line every time
@@ -143,6 +146,5 @@ proc read*(editor: LineEditor): string =
 
   # move cursor to end
   editor.moveCursorToEnd()
+  result = editor.content.getContent()
   editor.reset()
-
-  return editor.content.getContent()
