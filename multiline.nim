@@ -19,10 +19,11 @@ proc Y*(ml: Multiline): int =
 
 # constructor
 
-proc newMultiline*: Multiline =
+proc newMultiline*(initEmpty: bool = true): Multiline =
   new(result)
   result.lines = @[]
-  result.lines.add(newLine())
+  if initEmpty:
+    result.lines.add(newLine())
   result.x = 0
   result.y = 0
 
@@ -148,6 +149,8 @@ proc getLine*(ml: Multiline, line: int = -1): string =
     else:
       ""
 
+# without the extra args these work together to convert a multiline to a single
+# line string. With extra args customizable
 proc serialize*(ml: Multiline, sep: string = r"\n", replaceBS: bool = true): string =
   # replaceBS = replace backslash
   for line in ml.lines:
@@ -158,7 +161,7 @@ proc serialize*(ml: Multiline, sep: string = r"\n", replaceBS: bool = true): str
   result[0..result.high() - sep.len()]
 
 proc deserialize*(str: string, sep: string = r"\n", replaceBS: bool = true): Multiline =
-  result = newMultiline()
+  result = newMultiline(initEmpty = false)
   for line in str.split(sep):
     if replaceBS:
       result.lines.add(newLine(line.replace(r"\\", r"\")))
@@ -168,6 +171,11 @@ proc deserialize*(str: string, sep: string = r"\n", replaceBS: bool = true): Mul
   result.y = result.high()
   result.x = result.lineLen()
 
+proc fromString*(str: string): Multiline =
+  # simple load of string to multiline
+  deserialize(str, sep = "\n", replaceBS = false)
+
 proc getContent*(ml: Multiline): string =
+  # simple convert of multiline to string
   ml.serialize(sep = "\n", replaceBS = false)
 

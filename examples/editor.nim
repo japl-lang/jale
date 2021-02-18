@@ -13,7 +13,7 @@ let e = newLineEditor()
 if paramCount() > 0:
   let arg = paramStr(1)
   if fileExists(arg):
-    e.content = readFile(arg).deserialize(replaceBS = false)
+    e.content = readFile(arg).fromString()
 e.bindKey("ctrl+s"):
   e.finish()
 e.prompt = ""
