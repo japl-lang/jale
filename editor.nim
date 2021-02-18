@@ -11,18 +11,23 @@ import renderer
 
 type 
   JaleEvent* = enum
-    jeKeypress, jeQuit, jeFinish, jeHistoryChange
+    jeKeypress, jeQuit, jeFinish, jePreRead, jePostRead
 
   LineEditor* = ref object
-    content*: Multiline
-    historyIndex*: int # TODO to be private
-    history*: seq[Multiline] # TODO to be private
+    # permanents
     keystrokes*: Event[int]
     events*: Event[JaleEvent]
     prompt*: string
+
+    # permanent internals: none
+    
+    # per-read contents
+    content*: Multiline
     lastKeystroke*: int
+    # per-read internals
     finished: bool
     rendered: int # how many lines were printed last full refresh
+    forceRedraw: bool
 
 # getter/setter sorts
 
@@ -34,48 +39,29 @@ proc finish*(le: LineEditor) =
   # can be overwritten to false, inside the event
   le.events.call(jeFinish)
 
+proc forceRedraw*(le: LineEditor) =
+  le.forceRedraw = true
+
 # constructor
 
 proc newLineEditor*: LineEditor =
   new(result)
   result.content = newMultiline()
-  result.history = @[]
-  result.history.add(result.content)
-  result.historyIndex = 0
   result.keystrokes.new()
   result.events.new()
   result.prompt = ""
   result.rendered = 0
+  result.lastKeystroke = -1
+  result.forceRedraw = false
   
 # priv/pub methods
-
-proc historyMove*(editor: LineEditor, delta: int) =
-  # broken behaviour: history should not be modified, it should clone
-  # the modified one that is eventually submitted and add it to the end
-  # TODO
-  if editor.historyIndex + delta < 0:
-    editor.content = editor.history[0]
-    editor.historyIndex = 0
-  elif editor.historyIndex + delta >= editor.history.high():
-    editor.content = editor.history[editor.history.high()]
-    editor.historyIndex = editor.history.high()
-  else:
-    editor.content = editor.history[editor.historyIndex + delta]
-    editor.historyIndex += delta
-  editor.events.call(jeHistoryChange)
-
 
 proc reset(editor: LineEditor) =
   editor.unfinish()
   editor.rendered = 0
-
-proc flush*(editor: LineEditor) =
-  # kinda like reset, it moves the current element one down in history
-  # and adds a new one
-  editor.reset()
   editor.content = newMultiline()
-  editor.history.add(editor.content)
-  editor.historyIndex = editor.history.high()
+  editor.lastKeystroke = -1
+  editor.forceRedraw = false
 
 proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
   var y = line
@@ -122,18 +108,13 @@ proc moveCursorToEnd(editor: LineEditor) =
     cursorDown(editor.content.high() - editor.content.Y)
   write stdout, "\n"
 
-# TODO don't use globals, but allow for event removal
-var histchange = false
-proc changeHistory =
-  histchange = true
-
 proc read*(editor: LineEditor): string =
+
+  editor.events.call(jePreRead)
+
   # starts at the top, full render moves it into the right y
   editor.fullRender()
 
-  # TODO: must remove event at end
-  # otherwise there'll be more instances of the same
-  editor.events.add(jeHistoryChange, changeHistory)
 
   while not editor.finished:
 
@@ -149,17 +130,19 @@ proc read*(editor: LineEditor): string =
     editor.keystrokes.call(key)
     editor.events.call(jeKeypress)
     # redraw everything if y changed
-    if histchange or preY != editor.content.Y:
+    if editor.forceRedraw or preY != editor.content.Y:
       # move to the top
       if preY > 0:
         cursorUp(preY)
       # move to the right y
       editor.fullRender()
-      if histchange:
-        histchange = false
+      if editor.forceRedraw:
+        editor.forceRedraw = false
+
+  editor.events.call(jePostRead)
 
   # move cursor to end
   editor.moveCursorToEnd()
   editor.reset()
-  
+
   return editor.content.getContent()

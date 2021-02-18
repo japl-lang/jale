@@ -2,6 +2,8 @@
 
 import line
 
+import strutils
+
 type
   Multiline* = ref object
     lines: seq[Line]
@@ -23,6 +25,13 @@ proc newMultiline*: Multiline =
   result.lines.add(newLine())
   result.x = 0
   result.y = 0
+
+proc copy*(ml: Multiline): Multiline =
+  new(result)
+  for l in ml.lines:
+    result.lines.add(l.copy())
+  result.x = ml.x
+  result.y = ml.y
 
 # methods
 
@@ -139,8 +148,23 @@ proc getLine*(ml: Multiline, line: int = -1): string =
     else:
       ""
 
-proc getContent*(ml: Multiline): string =
+proc serialize*(ml: Multiline, sep: string = r"\n", replaceBS: bool = true): string =
+  # replaceBS = replace backslash
   for line in ml.lines:
-    result &= line.content & "\n"
-  result[0..result.high()-1] # cut finishing newline
+    if replaceBS:
+      result &= line.content.replace(r"\", r"\\") & sep
+    else:
+      result &= line.content & sep
+  result[0..result.high() - sep.len()]
+
+proc deserialize*(str: string, sep: string = r"\n"): Multiline =
+  result = newMultiline()
+  for line in str.split(sep):
+    result.lines.add(newLine(line.replace(r"\\", r"\")))
+
+  result.y = result.high()
+  result.x = result.lineLen()
+
+proc getContent*(ml: Multiline): string =
+  ml.serialize(sep = "\n", replaceBS = false)
 

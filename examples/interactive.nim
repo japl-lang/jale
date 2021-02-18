@@ -1,7 +1,7 @@
-import defaults
-import editor
-import strutils
-import templates
+import ../plugin/defaults
+import ../editor
+import ../strutils
+import ../templates
 
 var keep = true
 
@@ -12,10 +12,8 @@ e.bindEvent(jeQuit):
 
 e.prompt = "> "
 e.populateDefaults()
+
 while keep:
   let input = e.read()
-  echo "history index: " & $e.historyIndex
-  e.flush()
-  echo "history len: " & $e.history.len()
   echo "output:<" & input.replace("\n", "\\n") & ">"
 
