@@ -3,6 +3,7 @@
 import ../multiline
 
 import os
+import options
 
 type HistoryElement* = ref object
   original*: Multiline
@@ -20,20 +21,38 @@ proc newHistory*: History =
   result.lowestTouchedIndex = 0
   result.elements = @[]
 
-proc delta*(h: History, amt: int): Multiline =
+template newIndex(h: History): Option[Multiline] =
+  if h.lowestTouchedIndex > h.index:
+    h.lowestTouchedIndex = h.index
+
+  some(h.elements[h.index].current)
+
+proc delta*(h: History, amt: int): Option[Multiline] =
   # move up/down in history and return reference to current
   # also update lowest touched index
+  if h.elements.len() == 0:
+    return none[Multiline]()
+
   if h.index + amt <= 0:
     h.index = 0
   elif h.index + amt >= h.elements.high():
     h.index = h.elements.high()
   else:
     h.index += amt
+  h.newIndex()
   
-  if h.lowestTouchedIndex > h.index:
-    h.lowestTouchedIndex = h.index
 
-  h.elements[h.index]
+proc toEnd*(h: History): Option[Multiline] =
+  if h.elements.len() == 0:
+    return none[Multiline]()
+  h.index = h.elements.high()
+  h.newIndex()
+
+proc toStart*(h: History): Option[Multiline] =
+  if h.elements.len() == 0:
+    return none[Multiline]()
+  h.index = 0
+  h.newIndex()
 
 proc clean*(h: History) =
   # restore originals to current
@@ -49,7 +68,7 @@ proc clean*(h: History) =
   h.lowestTouchedIndex = h.elements.len()
 
 proc newEntry*(h: History, ml: Multiline, temp: bool = false) =
-  h.elements.add(History(original: ml, current: ml.copy(), temp: temp))
+  h.elements.add(HistoryElement(original: ml, current: ml.copy(), temp: temp))
 
 proc save*(h: History, path: string) =
   # discards currents and temps, only saves originals

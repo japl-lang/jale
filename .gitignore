@@ -1,3 +1,4 @@
-examples/interactive
 examples/editor
+examples/interactive_basic
+examples/interactive_history
 getkey

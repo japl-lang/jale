@@ -13,6 +13,9 @@ type
   JaleEvent* = enum
     jeKeypress, jeQuit, jeFinish, jePreRead, jePostRead
 
+  EditorState = enum
+    esOutside, esTyping, esFinishing, esQuitting
+
   LineEditor* = ref object
     # permanents
     keystrokes*: Event[int]
@@ -25,22 +28,22 @@ type
     content*: Multiline
     lastKeystroke*: int
     # per-read internals
-    finished: bool
+    state: EditorState
     rendered: int # how many lines were printed last full refresh
     forceRedraw: bool
 
 # getter/setter sorts
 
 proc unfinish*(le: LineEditor) =
-  le.finished = false
+  le.state = esTyping
 
 proc finish*(le: LineEditor) =
-  le.finished = true
+  le.state = esFinishing
   # can be overwritten to false, inside the event
   le.events.call(jeFinish)
 
 proc quit*(le: LineEditor) =
-  le.finished = true
+  le.state = esQuitting
   le.events.call(jeQuit)
 
 proc forceRedraw*(le: LineEditor) =
@@ -57,11 +60,14 @@ proc newLineEditor*: LineEditor =
   result.rendered = 0
   result.lastKeystroke = -1
   result.forceRedraw = false
+  result.state = esOutside
   
 # priv/pub methods
 
 proc reset(editor: LineEditor) =
-  editor.unfinish()
+  ## Resets state to outside, resets internal rendering details
+  ## resets last keystroke, creates new contents
+  editor.state = esOutside
   editor.rendered = 0
   editor.content = newMultiline()
   editor.lastKeystroke = -1
@@ -114,12 +120,13 @@ proc moveCursorToEnd(editor: LineEditor) =
 
 proc read*(editor: LineEditor): string =
 
+  editor.state = esTyping
   editor.events.call(jePreRead)
 
   # starts at the top, full render moves it into the right y
   editor.fullRender()
 
-  while not editor.finished:
+  while editor.state == esTyping:
 
     # refresh current line every time
     editor.render()
