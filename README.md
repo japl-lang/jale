@@ -30,6 +30,8 @@ the output.
 - multiline support
 - easily add new keybindings (using templates)
 - very customizable (even inserting characters is a keybinding that's optional)
+- plugin system based
+- history
 
 # Example usage
 
@@ -39,7 +41,7 @@ the output.
 import editor
 # import the default keybindings for basic stuff
 # like arrow key movement or inserting characters
-import defaults
+import plugin/defaults
 # import helper templates for adding custom key or
 # event bindings
 import templates
@@ -52,6 +54,9 @@ e.prompt = "> "
 e.populateDefaults()
 
 var printOutput = true
+
+# very weird use case, but if ctrl+b is pressed during reading, don't
+# print the output
 e.bindKey("ctrl+b"):
 	printOutput = false
 
@@ -61,7 +66,7 @@ if printOutput:
 	echo input
 ```
 
-Also see main.nim if the above example does not suffice,
+Also see examples folder if the above example does not suffice,
 and look at defaults.nim for many binding examples.
 Look at multiline.nim's procs and editor.nim's 
 LineEditor type for an "API". It's wip, docs will 
@@ -72,7 +77,7 @@ improve if it ever gets more stable.
 Note: they won't be missing forever hopefully.
 
 - No utf-8
-- No tab support
+- No tab autocompletion support
 - No syntax highlighting support
-- Does not support windows
+- Windows keybindings not finished, windows was not tested yet
 
