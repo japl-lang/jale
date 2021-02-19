@@ -21,17 +21,19 @@ proc bindTerminate*(editor: LineEditor) =
       editor.quit()
 
 
-proc populateDefaults*(editor: LineEditor, enterSubmits = true, shiftForVerticalMove = true) =
+proc populateDefaults*(editor: LineEditor, enterSubmits = true, ctrlForVerticalMove = true) =
   editor.bindInput()
   editor.bindTerminate()
   editor.bindKey("left"):
     editor.content.left()
   editor.bindKey("right"):
     editor.content.right()
-  if shiftForVerticalMove:
-    editor.bindKey("shiftup"):
+  if ctrlForVerticalMove:
+    editor.bindKey("ctrlup"):
       editor.content.up()
-    editor.bindKey("shiftdown"):
+    editor.bindKey("ctrldown"):
+      if editor.content.Y() == editor.content.high():
+        editor.content.insertline()
       editor.content.down()
     editor.bindKey("ctrlpageup"):
       editor.content.vhome()
@@ -55,8 +57,6 @@ proc populateDefaults*(editor: LineEditor, enterSubmits = true, shiftForVertical
   editor.bindKey("delete"):
     editor.content.delete()
   if enterSubmits:
-    editor.bindKey("ctrldown"):
-      editor.content.enter()
     editor.bindKey("enter"):
       editor.finish()
   else:

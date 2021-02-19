@@ -1,13 +1,13 @@
 import strformat
 import strutils
 import tables
-import terminal
 
 import line
 import multiline
 import keycodes
 import event
 import renderer
+import uniterm
 
 type 
   JaleEvent* = enum
@@ -73,12 +73,12 @@ proc reset(editor: LineEditor) =
   editor.lastKeystroke = -1
   editor.forceRedraw = false
 
-proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
+proc render(editor: LineEditor, wr: var TermWriter, line: int = -1, hscroll: bool = true) =
   var y = line
   if y == -1:
     y = editor.content.Y
 
-  renderLine(
+  wr.renderLine(
     (
       if y == 0:
         editor.prompt
@@ -89,49 +89,52 @@ proc render(editor: LineEditor, line: int = -1, hscroll: bool = true) =
     0
   )
 
-proc clearLine =
-  write stdout, "\r" & " ".repeat(terminalWidth())
+proc clearLine(wr: var TermWriter) =
+  wr.clearLine()
 
-proc fullRender(editor: LineEditor) =
+proc fullRender(editor: LineEditor, wr: var TermWriter) =
   # from the top cursor pos, it draws the entire multiline prompt, then
   # moves cursor to current y
   for i in countup(0, editor.content.high()):
-    editor.render(i, false)
+    editor.render(wr, i, false)
     if i < editor.rendered:
-      cursorDown(1)
+      wr.down(1)
     else:
       write stdout, "\n"
       inc editor.rendered
       
   var extraup = 0
   while editor.content.len() < editor.rendered:
-    clearLine()
-    cursorDown(1)
+    wr.clearLine()
+    wr.down(1)
     dec editor.rendered
     inc extraup
 
-  cursorUp(editor.content.len() - editor.content.Y + extraup)
+  wr.up(editor.content.len() - editor.content.Y + extraup)
 
-proc moveCursorToEnd(editor: LineEditor) =
+proc moveCursorToEnd(editor: LineEditor, wr: var TermWriter) =
   # only called when read finished
   if editor.content.high() > editor.content.Y:
-    cursorDown(editor.content.high() - editor.content.Y)
-  write stdout, "\n"
+    wr.down(editor.content.high() - editor.content.Y)
+  wr.lf()
 
 proc read*(editor: LineEditor): string =
 
   editor.state = esTyping
   editor.events.call(jePreRead)
 
+  var buffer: TermWriter
+
   # starts at the top, full render moves it into the right y
-  editor.fullRender()
+  editor.fullRender(buffer)
 
   while editor.state == esTyping:
 
     # refresh current line every time
-    editor.render()
-    setCursorXPos(editor.content.X + editor.prompt.len())
+    editor.render(buffer)
+    buffer.setCursorX(editor.content.X + editor.prompt.len())
     # get key (with escapes)
+    buffer.flush()
     let key = getKey()
     # record y pos
     let preY = editor.content.Y
@@ -143,16 +146,17 @@ proc read*(editor: LineEditor): string =
     if editor.forceRedraw or preY != editor.content.Y:
       # move to the top
       if preY > 0:
-        cursorUp(preY)
+        buffer.up(preY)
       # move to the right y
-      editor.fullRender()
+      editor.fullRender(buffer)
       if editor.forceRedraw:
         editor.forceRedraw = false
 
   editor.events.call(jePostRead)
 
   # move cursor to end
-  editor.moveCursorToEnd()
+  editor.moveCursorToEnd(buffer)
+  buffer.flush()
   if editor.state == esFinishing:
     result = editor.content.getContent()
   editor.reset()
