@@ -46,7 +46,7 @@ proc quit*(le: LineEditor) =
   le.state = esQuitting
   le.events.call(jeQuit)
 
-proc forceRedraw*(le: LineEditor) =
+proc redraw*(le: LineEditor) =
   le.forceRedraw = true
 
 # constructor
@@ -89,9 +89,6 @@ proc render(editor: LineEditor, wr: var TermWriter, line: int = -1, hscroll: boo
     0
   )
 
-proc clearLine(wr: var TermWriter) =
-  wr.clearLine()
-
 proc fullRender(editor: LineEditor, wr: var TermWriter) =
   # from the top cursor pos, it draws the entire multiline prompt, then
   # moves cursor to current y
@@ -100,7 +97,7 @@ proc fullRender(editor: LineEditor, wr: var TermWriter) =
     if i < editor.rendered:
       wr.down(1)
     else:
-      write stdout, "\n"
+      wr.lf()
       inc editor.rendered
       
   var extraup = 0
@@ -131,7 +128,6 @@ proc read*(editor: LineEditor): string =
   while editor.state == esTyping:
 
     # refresh current line every time
-    editor.render(buffer)
     buffer.setCursorX(editor.content.X + editor.prompt.len())
     # get key (with escapes)
     buffer.flush()
@@ -151,6 +147,8 @@ proc read*(editor: LineEditor): string =
       editor.fullRender(buffer)
       if editor.forceRedraw:
         editor.forceRedraw = false
+    else:
+      editor.render(buffer)
 
   editor.events.call(jePostRead)
 

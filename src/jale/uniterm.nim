@@ -55,6 +55,7 @@ proc clearLine*(wr: var TermWriter) =
     wr &= ($27.char & "[1M" & $27.char & "[1L")
   else:
     wr &= ($27.char & "[2K")
+  wr.cr()
 
 proc setCursorX*(wr: var TermWriter, x: int) =
   when defined(windows):

@@ -37,19 +37,23 @@ proc bindHistory*(ed: LineEditor, h: History, useShift: bool = false) =
     let res = h.delta(-1)
     if res.isSome():
       ed.content = res.get()
+      ed.redraw()
 
   ed.bindKey(downkey):
     let res = h.delta(1)
     if res.isSome():
       ed.content = res.get()
+      ed.redraw()
 
   ed.bindKey(homekey):
     let res = h.toStart()
     if res.isSome():
       ed.content = res.get()
+      ed.redraw()
 
   ed.bindKey(endKey):
     let res = h.toStart()
     if res.isSome():
       ed.content = res.get()
+      ed.redraw()
 

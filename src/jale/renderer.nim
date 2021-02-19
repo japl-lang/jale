@@ -18,5 +18,3 @@ proc renderLine*(wr: var TermWriter, prompt: string, content: string, hscroll: i
     content = content[lower..upper]
   wr &= content
 
-
-
