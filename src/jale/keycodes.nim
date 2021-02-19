@@ -53,6 +53,8 @@ proc defEscSeq(keys: seq[int], id: JaleKeycode) =
   for key in keys:
     result *= 256
     result += key
+  if escapeSeqs.hasKey(result):
+    raise newException(Defect, "Duplicate escape sequence definition")
   escapeSeqs[result] = id
 
 block:
@@ -94,7 +96,7 @@ block:
     defEscSeq(@[27, 91, 67], jkRight)
     defEscSeq(@[27, 91, 68], jkLeft)
 
-    # shift+arrow keys
+    # ctrl+arrow keys
     defEscSeq(@[27, 91, 49], jkContinue)
     defEscSeq(@[27, 91, 49, 59], jkContinue)
     defEscSeq(@[27, 91, 49, 59, 53], jkContinue) # ctrl
@@ -106,6 +108,13 @@ block:
     defEscSeq(@[27, 91, 49, 59, 53, 67], jkCtrlRight) # ctrl
     defEscSeq(@[27, 91, 49, 59, 53, 68], jkCtrlLeft) # ctrl
 
+    # urxvt
+    defEscSeq(@[27, 79], jkContinue)
+    defEscSeq(@[27, 79, 97], jkCtrlUp)
+    defEscSeq(@[27, 79, 98], jkCtrlDown)
+    defEscSeq(@[27, 79, 99], jkCtrlRight)
+    defEscSeq(@[27, 79, 100], jkCtrlLeft)
+
     # other 4 move keys
     defEscSeq(@[27, 91, 72], jkHome)
     defEscSeq(@[27, 91, 70], jkEnd)
@@ -113,8 +122,17 @@ block:
     defEscSeq(@[27, 91, 53], jkContinue)
     defEscSeq(@[27, 91, 53, 126], jkPageUp)
     defEscSeq(@[27, 91, 54, 126], jkPageDown)
+    # alternative home/end for tty
+    defEscSeq(@[27, 91, 49, 126], jkHome)
+    defEscSeq(@[27, 91, 52], jkContinue)
+    defEscSeq(@[27, 91, 52, 126], jkEnd)
+    # urxvt
+    defEscSeq(@[27, 91, 55], jkContinue)
+    defEscSeq(@[27, 91, 56], jkContinue)
+    defEscSeq(@[27, 91, 55, 126], jkHome)
+    defEscSeq(@[27, 91, 56, 126], jkEnd)
 
-    # ctrl + fancy keys like pgup, pgdown
+    # ctrl + fancy keys like pgup, pgdown, home, end
     defEscSeq(@[27, 91, 53, 59], jkContinue)
     defEscSeq(@[27, 91, 53, 59, 53], jkContinue)
     defEscSeq(@[27, 91, 53, 59, 53, 126], jkCtrlPageUp)
@@ -122,9 +140,14 @@ block:
     defEscSeq(@[27, 91, 54, 59, 53], jkContinue)
     defEscSeq(@[27, 91, 54, 59, 53, 126], jkCtrlPageDown)
 
-    # ctrl+ home, end
     defEscSeq(@[27, 91, 49, 59, 53, 72], jkCtrlHome)
     defEscSeq(@[27, 91, 49, 59, 53, 70], jkCtrlEnd)
+
+    # urxvt
+    defEscSeq(@[27, 91, 53, 94], jkCtrlPageUp)
+    defEscSeq(@[27, 91, 54, 94], jkCtrlPageDown)
+    defEscSeq(@[27, 91, 55, 94], jkCtrlHome)
+    defEscSeq(@[27, 91, 56, 94], jkCtrlEnd)
 
     # other keys
     defEscSeq(@[27, 91, 51], jkContinue)

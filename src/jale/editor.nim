@@ -78,16 +78,8 @@ proc render(editor: LineEditor, wr: var TermWriter, line: int = -1, hscroll: boo
   if y == -1:
     y = editor.content.Y
 
-  wr.renderLine(
-    (
-      if y == 0:
-        editor.prompt
-      else:
-        " ".repeat(editor.prompt.len())
-    ),
-    editor.content.getLine(y), 
-    0
-  )
+  let prompt = if y == 0: editor.prompt else: " ".repeat(editor.prompt.len())
+  wr.renderLine(prompt, editor.content.getLine(y), 0)
 
 proc fullRender(editor: LineEditor, wr: var TermWriter) =
   # from the top cursor pos, it draws the entire multiline prompt, then
