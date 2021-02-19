@@ -21,7 +21,7 @@ e.bindKey("ctrl+s"):
   save = true
 
 e.prompt = ""
-e.populateDefaults(enterSubmits = false, shiftForVerticalMove = false)
+e.populateDefaults(enterSubmits = false, ctrlForVerticalMove = false)
 let result = e.read()
 if save and paramCount() > 0:
   writeFile(paramStr(1), result)
