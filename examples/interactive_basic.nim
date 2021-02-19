@@ -1,7 +1,8 @@
-import ../plugin/defaults
-import ../editor
-import ../strutils
-import ../templates
+import jale/plugin/defaults
+import jale/editor
+import jale/templates
+
+import strutils
 
 var keep = true
 

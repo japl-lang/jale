@@ -1,10 +1,10 @@
-import ../plugin/defaults
-import ../editor
-import ../strutils
-import ../templates
-import ../multiline
+import jale/plugin/defaults
+import jale/editor
+import jale/templates
+import jale/multiline
 
 import terminal
+import strutils
 import os
 
 eraseScreen()

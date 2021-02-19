@@ -153,5 +153,6 @@ proc read*(editor: LineEditor): string =
 
   # move cursor to end
   editor.moveCursorToEnd()
-  result = editor.content.getContent()
+  if editor.state == esFinishing:
+    result = editor.content.getContent()
   editor.reset()

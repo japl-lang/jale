@@ -1,9 +1,10 @@
-import ../plugin/defaults
-import ../plugin/history
-import ../plugin/editor_history
-import ../editor
-import ../strutils
-import ../templates
+import jale/plugin/defaults
+import jale/plugin/history
+import jale/plugin/editor_history
+import jale/editor
+import jale/templates
+
+import strutils
 
 var keep = true
 
