@@ -33,6 +33,7 @@ Unless otherwise specified, everything falls back to Artix linux (basically the 
 Info about testing dates:
 
 | Testing date | commit                                   |
+| :----------- | :--------                                |
 | 19.2.2021    | 12c7c28714508e7a1c16bcd7b3fa1372c4a19ae2 |
 
 ## Notes (open in a text editor to see this section well)
