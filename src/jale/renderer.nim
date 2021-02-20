@@ -5,16 +5,18 @@
 import strutils
 import terminal
 
-proc renderLine*(prompt: string, content: string, hscroll: int = 0) =
+proc renderLine*(prompt: string, text: string, hscroll: int = 0) =
+  eraseLine()
   setCursorXPos(0)
-  var content = prompt & content
-  if content.len() < terminalWidth():
-    content &= " ".repeat(terminalWidth() - content.len() - 1)
-  if content.len() > terminalWidth():
-    var lower = hscroll
-    var upper = hscroll + terminalWidth() - 1
-    if upper > content.high():
-      upper = content.high()
-    content = content[lower..upper]
-  write stdout, content
+  var lower = hscroll
+  var upper = hscroll + terminalWidth() - prompt.len() - 1
+  if upper > text.high():
+    upper = text.high()
+  if lower < -1:
+    raise newException(Defect, "negative hscroll submitted to renderLine")
+  if lower > text.high():
+    write stdout, prompt
+  else:
+    let content = prompt & text[lower..upper]
+    write stdout, content
 

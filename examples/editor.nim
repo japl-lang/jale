@@ -22,6 +22,7 @@ e.bindKey("ctrl+s"):
 
 e.prompt = ""
 e.populateDefaults(enterSubmits = false, ctrlForVerticalMove = false)
+e.scrollMode = sbAllScroll
 let result = e.read()
 if save and paramCount() > 0:
   writeFile(paramStr(1), result)
