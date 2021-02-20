@@ -3,18 +3,18 @@
 # a terminal renderer for readline-like libraries
 
 import strutils
-import uniterm
+import terminal
 
-proc renderLine*(wr: var TermWriter, prompt: string, content: string, hscroll: int = 0) =
-  wr.cr()
+proc renderLine*(prompt: string, content: string, hscroll: int = 0) =
+  setCursorXPos(0)
   var content = prompt & content
-  if content.len() < wr.terminalWidth():
-    content &= " ".repeat(wr.terminalWidth() - content.len())
-  if content.len() > wr.terminalWidth():
+  if content.len() < terminalWidth():
+    content &= " ".repeat(terminalWidth() - content.len())
+  if content.len() > terminalWidth():
     var lower = hscroll
-    var upper = hscroll + wr.terminalWidth() - 1
+    var upper = hscroll + terminalWidth() - 1
     if upper > content.high():
       upper = content.high()
     content = content[lower..upper]
-  wr &= content
+  write stdout, content
 
