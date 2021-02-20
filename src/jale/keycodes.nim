@@ -46,13 +46,13 @@ block:
     keysByName[name] = i
     keysById[i] = name
 
-var escapeSeqs*: Table[int, JaleKeycode]
+var escapeSeqs*: Table[uint64, JaleKeycode]
 
 proc defEscSeq(keys: seq[int], id: JaleKeycode) =
-  var result = 0
+  var result: uint64 = 0'u64
   for key in keys:
     result *= 256
-    result += key
+    result += key.uint64
   if escapeSeqs.hasKey(result):
     raise newException(Defect, "Duplicate escape sequence definition")
   escapeSeqs[result] = id
@@ -159,14 +159,14 @@ block:
     defEscSeq(@[8], jkBackspace) 
 
 proc getKey*: int =
-  var key: int = 0
+  var key: uint64 = 0
   while true:
     key *= 256
-    key += int(uniGetChr())
+    key += uniGetChr().uint64
     if escapeSeqs.hasKey(key):
       if escapeSeqs[key] != jkContinue:
-        key = int(escapeSeqs[key])
+        key = escapeSeqs[key].uint64
         break
     else:
       break
-  return key
+  return key.int
