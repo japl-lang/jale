@@ -79,8 +79,8 @@ block:
     # ctrl+moves
     defEscSeq(@[224, 134], jkCtrlPageUp)
     defEscSeq(@[224, 118], jkCtrlPageDown)
-    defEscSeq(@[224, 115], jkCtrlHome)
-    defEscSeq(@[224, 116], jkCtrlEnd)
+    defEscSeq(@[224, 119], jkCtrlHome)
+    defEscSeq(@[224, 117], jkCtrlEnd)
     
     # special keys
     defEscSeq(@[8], jkBackspace)

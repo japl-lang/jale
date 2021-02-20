@@ -9,7 +9,7 @@ proc renderLine*(prompt: string, content: string, hscroll: int = 0) =
   setCursorXPos(0)
   var content = prompt & content
   if content.len() < terminalWidth():
-    content &= " ".repeat(terminalWidth() - content.len())
+    content &= " ".repeat(terminalWidth() - content.len() - 1)
   if content.len() > terminalWidth():
     var lower = hscroll
     var upper = hscroll + terminalWidth() - 1
