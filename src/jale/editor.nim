@@ -8,6 +8,7 @@ import keycodes
 import event
 import renderer
 import terminal
+import os
 
 type 
   JaleEvent* = enum
@@ -36,6 +37,8 @@ type
     rendered: int # how many lines were printed last full refresh
     forceRedraw: bool
     hscroll: int
+    vmax: int
+    vscroll: int
 
 # getter/setter sorts
 
@@ -68,6 +71,8 @@ proc newLineEditor*: LineEditor =
   result.state = esOutside
   result.scrollMode = sbSingleScroll
   result.hscroll = 0
+  result.vscroll = 0
+  result.vmax = terminalHeight() - 1
   
 # priv/pub methods
 
@@ -102,22 +107,27 @@ proc render(editor: LineEditor, line: int = -1) =
 proc fullRender(editor: LineEditor) =
   # from the top cursor pos, it draws the entire multiline prompt, then
   # moves cursor to current y
-  for i in countup(0, editor.content.high()):
+
+  let lastY = min(editor.content.high(), editor.vscroll + editor.vmax - 1)
+  for i in countup(editor.vscroll, lastY):
     editor.render(i)
-    if i < editor.rendered:
+    if i - editor.vscroll < editor.rendered:
       cursorDown(1)
     else:
       write stdout, "\n"
       inc editor.rendered
-      
+
+  let rendered = lastY - editor.vscroll + 1
   var extraup = 0
-  while editor.content.len() < editor.rendered:
+  while rendered < editor.rendered:
     eraseLine()
     cursorDown(1)
     dec editor.rendered
     inc extraup
 
-  cursorUp(editor.content.len() - editor.content.Y + extraup)
+  # return to the selected y pos
+  let vindex = editor.content.Y - editor.vscroll
+  cursorUp(rendered - vindex + extraup)
 
 proc moveCursorToEnd(editor: LineEditor) =
   # only called when read finished
@@ -138,9 +148,12 @@ proc read*(editor: LineEditor): string =
     # refresh current line every time
     setCursorXPos(editor.content.X - editor.hscroll + editor.prompt.len())
     # get key (with escapes)
+
     let key = getKey()
     # record y pos
     let preY = editor.content.Y
+    let preVScroll = editor.vscroll
+
     # call the events
     editor.lastKeystroke = key
     editor.keystrokes.call(key)
@@ -159,11 +172,22 @@ proc read*(editor: LineEditor): string =
       if editor.scrollMode == sbAllScroll:
         editor.forceRedraw = true
 
+    # first y possibly rendered
+    let firstY = editor.vscroll
+    let lastY = editor.vscroll + editor.vmax - 1
+
+    # y squished into boundaries
+    let boundY = min(max(firstY, editor.content.Y), lastY)
+    if editor.content.Y != boundY:
+      editor.vscroll += editor.content.Y - boundY
+      
+      editor.forceRedraw = true
+
     # redraw everything if y changed
-    if editor.forceRedraw or preY != editor.content.Y:
+    if editor.forceRedraw or preY != editor.content.Y or preVScroll != editor.vscroll:
       # move to the top
-      if preY > 0:
-        cursorUp(preY)
+      if preY - preVScroll > 0:
+        cursorUp(preY - preVScroll)
       # move to the right y
       editor.fullRender()
       if editor.forceRedraw:
