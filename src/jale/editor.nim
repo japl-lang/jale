@@ -12,7 +12,8 @@ import os
 
 type 
   JaleEvent* = enum
-    jeKeypress, jeQuit, jeFinish, jePreRead, jePostRead
+    jeKeypress, jeQuit, jeFinish, jePreRead, jePostRead, jePreFullRender,
+    jePreKey, jePostKey, jeResize
 
   EditorState = enum
     esOutside, esTyping, esFinishing, esQuitting
@@ -37,7 +38,7 @@ type
     rendered: int # how many lines were printed last full refresh
     forceRedraw: bool
     hscroll: int
-    vmax: int
+    vmax*: int
     vscroll: int
 
 # getter/setter sorts
@@ -108,6 +109,8 @@ proc fullRender(editor: LineEditor) =
   # from the top cursor pos, it draws the entire multiline prompt, then
   # moves cursor to current y
 
+  editor.events.call(jePreFullRender)
+
   let lastY = min(editor.content.high(), editor.vscroll + editor.vmax - 1)
   for i in countup(editor.vscroll, lastY):
     editor.render(i)
@@ -156,7 +159,9 @@ proc read*(editor: LineEditor): string =
     # call the events
     editor.lastKeystroke = key
     editor.keystrokes.call(key)
+    editor.events.call(jePreKey)
     editor.events.call(jeKeypress)
+    editor.events.call(jePostKey)
     # autoscroll horizontally based on current scroll and x pos
     
     # last x rendered

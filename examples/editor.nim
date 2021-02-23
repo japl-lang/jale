@@ -1,4 +1,5 @@
 import jale/plugin/defaults
+import jale/plugin/viewprotector
 import jale/editor
 import jale/templates
 import jale/multiline
@@ -22,6 +23,7 @@ e.bindKey("ctrl+s"):
 
 e.prompt = ""
 e.populateDefaults(enterSubmits = false, ctrlForVerticalMove = false)
+e.setViewBehavior(vbFullscreen)
 e.scrollMode = sbAllScroll
 let result = e.read()
 if save and paramCount() > 0:

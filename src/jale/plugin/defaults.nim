@@ -3,6 +3,7 @@ import ../keycodes
 import ../multiline
 import ../event
 import ../templates
+import resize
 
 import tables
 
@@ -20,10 +21,10 @@ proc bindTerminate*(editor: LineEditor) =
     if editor.content.getContent() == "":
       editor.quit()
 
-
 proc populateDefaults*(editor: LineEditor, enterSubmits = true, ctrlForVerticalMove = true) =
   editor.bindInput()
   editor.bindTerminate()
+  editor.bindResize()
   editor.bindKey("left"):
     editor.content.left()
   editor.bindKey("right"):
