@@ -126,7 +126,6 @@ proc fullRender(editor: LineEditor) =
     inc extraup
 
   # return to the selected y pos
-  let vindex = editor.content.Y - editor.vscroll
   cursorUp(lastY + 1 - editor.content.Y + extraup)
 
 proc moveCursorToEnd(editor: LineEditor) =
