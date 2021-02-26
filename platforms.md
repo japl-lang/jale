@@ -9,65 +9,61 @@ Unless otherwise specified, everything falls back to Artix linux (basically the 
 
 | Terminal              | Last tested and worked                        |
 | :--------             | :------------                                 |
-| xfce terminal         | passed on 19.2.2021                           |
-| konsole               | passed on 19.2.2021                           |
-| alacritty             | passed on 19.2.2021                           |
-| xterm                 | passed on 19.2.2021                           |
-| urxvt                 | failed on 19.2.2021 (probably not vt100 comp) |
-| cmd.exe               | never                                         |
-| powershell            | never                                         |
-| windows terminal      | never                                         |
-| cygwin                | never                                         |
-| termux/android        | never                                         |
-| xfce terminal + ssh   | passed on 19.2.2021                           |
-| xfce terminal + tmux  | failed on 19.2.2021                           |
-| tty                   | ? on 19.2.2021 (see notes)                    |
-| freebsd tty           | ? on 19.2.2021 (see notes)                    |
+| xfce terminal         | passed on 26.2.2021                           |
+| konsole               | passed on 26.2.2021                           |
+| alacritty             | passed on 26.2.2021                           |
+| xterm                 | passed on 26.2.2021                           |
+| termite               | passed on 26.2.2021                           |
+| urxvt                 | passed on 26.2.2021                           |
+| win 10 + cmd.exe      | 26.2.2021: see notes                          |
+| win 10 + powershell   | 26.2.2021: see notes                          |
+| xfce terminal + ssh   | passed on 26.2.2021                           |
+| xfce terminal + tmux  | 26.2.2021: see notes                          |
+| tty                   | 26.2.2021: see notes                          |
 | freebsd xterm         | passed on 19.2.2021                           |
 | freebsd xfce term     | passed on 19.2.2021                           |
 | debian xterm          | passed on 19.2.2021                           |
 | debian qterminal      | passed on 19.2.2021                           |
 | debian kitty          | passed on 19.2.2021                           |
-| nim 1.0.0             | failed to compile on 19.2.2021                |
+| nim 1.0.0             | passed on 26.2.2021                           |
 
 Info about testing dates:
 
 | Testing date | commit                                   |
 | :----------- | :--------                                |
 | 19.2.2021    | 12c7c28714508e7a1c16bcd7b3fa1372c4a19ae2 |
+| 26.2.2021    | d4d2f52ec13a3c5cfea2cdce2d09777317de3545 |
 
-## Notes (open in a text editor to see this section well)
+## Notes on 26.2.2021
 
-urxvt: Ctrl+down outputted a "b", so most likely different escape sequence (not the usual vt100).
-The following sequences are in out of the box urxvt:
-ctrl up: 27, 79, 97
-ctrl down: 27, 79, 98
-ctrl left: 27, 79, 100
-ctrl right: 27, 79, 99
-ctrl pgup: 27, 91, 53, 94
-ctrl pgdn: 27, 91, 54, 94
-ctrl home: 27, 91, 55, 94
-ctrl end: 27, 91, 56, 94
-home: 27, 91, 55, 126
-end: 27, 91, 56, 126
-already should be fixed, will update at next testing date
+### Found issues
 
-tmux, the following input differs:
-end: 27, 91, 52, 126
-home: 27, 91, 49, 126
-(ctrl versions fine)
+- (minor, doesn't affect repls) examples/editor does not scroll to the
+end right after opening when opening a file too large to fit in the screen.
 
-tty:
-ctrl makes no difference on arrow keys
-home: 27, 91, 49, 126
-end: 27, 91, 52, 126
-home/end already should be fixed, will update at next testing date
+- (minor) examples/interactive_history when a history element is taller than the screen,
+it can cause issues with the rendering of the next history element when scrolling
+through history
 
-freebsd tty:
-ctrl makes no difference on arrow keys
+### tmux notes
 
-nim 1.0.0:
-already should be fixed, will update at next testing date
+- ctrl+pageup and ctrl+page down do not create any input (not even for getch)
+- otherwise pass
+
+### tty notes
+
+- ctrl+(arrow keys) does not create a distinct key
+
+### powershell notes
+
+- editor issues:
+- on horizontal scroll conditions the line can overflow causing rendering bugs
+- on vertical scroll + page up the first line could disappear (maybe only when first line is a horizontal scroll candidate)
+- very slow experience, a lot of cursor jumping
+
+### cmd.exe notes
+
+- same issues as powershell
 
 # Testing procedure
 
@@ -84,4 +80,6 @@ examples/editor
 - [ ] Clears the screen well
 - [ ] Writing small files
 - [ ] Reading small files
+- [ ] horizontal scroll
+- [ ] vertical scroll
 
