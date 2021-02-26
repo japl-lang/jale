@@ -10,6 +10,7 @@ proc plugHistory*(ed: LineEditor): History =
   # after reading finished, it adds to history
   # before reading, it adds the temporary input to the history
   let hist = newHistory()
+  
   ed.bindEvent(jeFinish):
     hist.clean()
     hist.newEntry(ed.content)

@@ -68,7 +68,10 @@ proc clean*(h: History) =
   h.lowestTouchedIndex = h.elements.len()
 
 proc newEntry*(h: History, ml: Multiline, temp: bool = false) =
-  h.elements.add(HistoryElement(original: ml, current: ml.copy(), temp: temp))
+  if not temp:
+    h.elements.add(HistoryElement(original: ml, current: ml.copy(), temp: temp))
+  else:
+    h.elements.add(HistoryElement(original: ml, current: ml, temp: temp))
 
 proc save*(h: History, path: string) =
   # discards currents and temps, only saves originals
